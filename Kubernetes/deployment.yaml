@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: olintes-deployment
+  labels:
+    app: olintes
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: olintes
+  template:
+    metadata:
+      labels:
+        app: olintes
+    spec:
+      containers:
+      - name: olintes-app
+        image: docker_registery/olintes:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: olintes-secrets
+              key: api-key
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: olintes-secrets
+              key: database-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: olintes-service
+spec:
+  selector:
+    app: olintes
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+  type: LoadBalancer
